@@ -14,7 +14,7 @@ module.exports = () => ({
   ],
   plugins: [
     replace({
-      __ENVIRONMENT__: `${JSON.stringify(require('dotenv').config().parsed)}`,
+      __ENVIRONMENT__: JSON.stringify(require('dotenv').config().parsed),
     }),
     resolve(),
     terser(),

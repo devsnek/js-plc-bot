@@ -1,4 +1,6 @@
-const SELF_ASSIGN_PREFIX = 'SA: ';
+import env from '../env';
+
+const { SELF_ASSIGN_PREFIX } = env;
 
 export async function role(message) {
   const guild = await message.getGuild();
