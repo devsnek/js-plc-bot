@@ -1,5 +1,5 @@
 import * as commands from './commands';
-import { getTag } from './tags';
+import * as tags from './tags';
 import { checkDisplayName } from './moderation';
 import env from './env';
 
@@ -27,7 +27,7 @@ discord.registerEventHandler('MESSAGE_CREATE', async (message) => {
     } else {
       tagName = message.content.slice(TAG_PREFIX.length);
     }
-    const entry = await getTag(tagName);
+    const entry = await tags.get(tagName);
     if (entry !== null) {
       if (match) {
         await message.reply(`${match[0]}, ${entry}`);

@@ -7,6 +7,17 @@ const fetch = require('node-fetch');
 const fs = require('fs');
 const WebSocket = require('ws');
 
+function workbenchWs(url) {
+  const ws = new WebSocket(url);
+  ws.onopen = () => console.log('WS Open');
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    console[data[0].method]('PYLON LOG:', ...data[0].data);
+  };
+  ws.onerror = console.error;
+  ws.onclose = () => workbenchWs(url);
+}
+
 fetch(`https://pylon.bot/api/deployments/${process.env.DEPLOYMENT_ID}`, {
   method: 'POST',
   headers: {
@@ -24,13 +35,6 @@ fetch(`https://pylon.bot/api/deployments/${process.env.DEPLOYMENT_ID}`, {
 }).then((r) => r.json())
   .then(({ workbench_url: workbenchEndpoint }) => {
     console.log('Published!');
-    const ws = new WebSocket(workbenchEndpoint);
-    ws.onopen = () => console.log('WS Open');
-    ws.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      console[data[0].method]('PYLON LOG:', ...data[0].data);
-    };
-    ws.onerror = console.error;
-    ws.onclose = console.error;
+    workbenchWs(workbenchEndpoint);
   })
   .catch(console.error);

@@ -85,7 +85,7 @@ export async function debug(message) {
   const source = message.content
     .replace(/^```(js|javascript)?/, '')
     .replace(/```$/, '');
-  const r = AsyncFunction('pylon', 'discord', 'message', source)(pylon, discord, message);
-  await message.reply(JSON.stringify(await r));
+  const r = await AsyncFunction('pylon', 'discord', 'message', source)(pylon, discord, message);
+  await message.reply(r === undefined ? 'undefined' : JSON.stringify(r));
 }
 debug.staffOnly = true;

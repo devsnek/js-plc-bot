@@ -8,7 +8,6 @@ module.exports = {
     sourceType: 'script',
   },
   env: {
-    es6: true,
     node: true,
   },
   overrides: [
@@ -20,6 +19,13 @@ module.exports = {
       },
       rules: {
         'no-restricted-globals': ['error', 'require'],
+      },
+    },
+    {
+      files: 'src/*',
+      env: {
+        node: false,
+        browser: false,
       },
     },
   ],

@@ -1,31 +1,25 @@
-import { TAGS } from '../tags';
+import * as tags from '../tags';
 
 export async function learn(message) {
   const [rawName, rawValue] = message.content.split('=');
   const name = rawName.trim().toLowerCase();
   const value = rawValue.trim();
-  const entry = await TAGS.get(name);
-  if (typeof entry === 'object' && entry !== null) {
-    await message.reply(
-      `"${name}" is an alias and cannot be given a value.`,
-    );
-    return;
+  try {
+    await tags.put(name, value);
+    await message.reply(`Learned "${name}":\n${value}`);
+  } catch (e) {
+    await message.reply(e.message);
   }
-  await TAGS.put(name, value);
-  await message.reply(`Learned "${name}":\n${value}`);
 }
 learn.staffOnly = true;
 
 export async function unlearn(message) {
   const name = message.content.trim();
-
-  const entry = await TAGS.get(name);
-  if (typeof entry === 'string'
-      || (typeof entry === 'object' && entry !== null)) {
-    await TAGS.delete(name);
+  try {
+    await tags.delete(name);
     await message.reply(`"${name}" has been unlearned`);
-  } else {
-    await message.reply(`"${name}" was never learned`);
+  } catch (e) {
+    await message.reply(e.message);
   }
 }
 unlearn.staffOnly = true;
@@ -34,7 +28,11 @@ export async function alias(message) {
   const [rawAlias, rawName] = message.content.split('=');
   const alias = rawAlias.trim().toLowerCase();
   const name = rawName.trim().toLowerCase();
-  await TAGS.put(alias, { alias: name });
-  await message.reply(`Created an alias from "${alias}" to "${name}"`);
+  try {
+    await tags.alias(alias, name);
+    await message.reply(`Created an alias from "${alias}" to "${name}"`);
+  } catch (e) {
+    await message.reply(e.message);
+  }
 }
 alias.staffOnly = true;
