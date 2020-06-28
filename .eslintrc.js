@@ -71,5 +71,7 @@ module.exports = {
   globals: {
     pylon: false,
     discord: false,
+    console: false,
+    BigInt: false,
   },
 };

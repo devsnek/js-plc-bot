@@ -49,10 +49,11 @@ discord.registerEventHandler('MESSAGE_CREATE', async (message) => {
       try {
         await command(message);
       } catch (e) {
-        console.error(e);
         await message.reply(`${message.author.toMention()}, ${e.message}`);
       }
     }
+  } else if (message.content.includes('www.w3schools.com')) {
+    await message.reply(`${message.author.toMention()}, try to avoid w3schools.com. <https://developer.mozilla.org/> is a good alternative.`);
   }
 });
 
