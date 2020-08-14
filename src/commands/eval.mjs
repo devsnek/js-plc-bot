@@ -1,9 +1,11 @@
 import {
   Agent,
-  Realm,
+  setSurroundingAgent,
+  ManagedRealm,
   Value,
-  Object as APIObject,
-  Abstract,
+  Type,
+  CreateDataProperty,
+  OrdinaryObjectCreate,
   inspect,
 } from '@engine262/engine262';
 import { burst } from '../burst.mjs';
@@ -12,20 +14,21 @@ function run(source) {
   const log = [];
 
   const agent = new Agent();
+  setSurroundingAgent(agent);
 
-  const s = agent.scope(() => {
-    const realm = new Realm();
+  const realm = new ManagedRealm();
+  const s = realm.scope(() => {
     {
-      const print = new Value(realm, (args) => {
+      const print = new Value((args) => {
         log.push(args.map((a) => inspect(a)).join(' '));
         return Value.undefined;
-      }, [], realm);
-      Abstract.CreateDataProperty(realm.global, new Value(realm, 'print'), print);
+      });
+      CreateDataProperty(realm.GlobalObject, new Value('print'), print);
     }
 
     {
-      const console = new APIObject(realm);
-      Abstract.CreateDataProperty(realm.global, new Value(realm, 'console'), console);
+      const console = OrdinaryObjectCreate(agent.intrinsic('%Object.prototype%'));
+      CreateDataProperty(realm.GlobalObject, new Value('console'), console);
 
       [
         'log',
@@ -34,32 +37,32 @@ function run(source) {
         'error',
         'clear',
       ].forEach((method) => {
-        const fn = new Value(realm, (args) => {
+        const fn = new Value((args) => {
           log.push(args.map((a, i) => {
-            if (i === 0 && Abstract.Type(a) === 'String') {
+            if (i === 0 && Type(a) === 'String') {
               return a.stringValue();
             }
             return inspect(a);
           }).join(' '));
           return Value.undefined;
         });
-        Abstract.CreateDataProperty(console, new Value(realm, method), fn);
+        CreateDataProperty(console, new Value(method), fn);
       });
     }
 
-    Abstract.CreateDataProperty(
-      realm.global,
-      new Value(realm, 'spec'),
-      new Value(realm, ([v]) => {
+    CreateDataProperty(
+      realm.GlobalObject,
+      new Value('spec'),
+      new Value(([v]) => {
         if (v && v.nativeFunction && v.nativeFunction.section) {
-          return new Value(realm, v.nativeFunction.section);
+          return new Value(v.nativeFunction.section);
         }
         return Value.undefined;
       }),
     );
 
     const result = realm.evaluateScript(source);
-    return inspect(result, realm);
+    return inspect(result);
   });
 
   return { log, result: s };
