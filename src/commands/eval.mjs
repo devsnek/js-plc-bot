@@ -10,10 +10,10 @@ import {
 } from '@engine262/engine262';
 import { burst } from '../burst.mjs';
 
-function run(source) {
+function run(source, features) {
   const log = [];
 
-  const agent = new Agent();
+  const agent = new Agent({ features });
   setSurroundingAgent(agent);
 
   const realm = new ManagedRealm();
@@ -69,11 +69,19 @@ function run(source) {
 }
 
 async function evil(message) {
-  const source = message.content
+  const {
+    groups: {
+      rawFeatures,
+      defeatured,
+    },
+  } = /(--features=(?<rawFeatures>\S+) )?(?<defeatured>.*)/s.exec(message.content);
+  const features = rawFeatures ? rawFeatures.split(',') : [];
+
+  const source = defeatured
     .replace(/^```(js|javascript)?/, '')
     .replace(/```$/, '');
 
-  const { log, result } = await burst(() => run(source));
+  const { log, result } = await burst(() => run(source, features));
 
   await message.reply(`${message.author.toMention()}
 \`\`\`js
