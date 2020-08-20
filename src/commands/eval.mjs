@@ -78,8 +78,8 @@ async function evil(message) {
   const features = rawFeatures ? rawFeatures.split(',') : [];
 
   const source = defeatured
-    .replace(/^```(js|javascript)?/, '')
-    .replace(/```$/, '');
+    .replace(/^\s*```(js|javascript)?/, '')
+    .replace(/```\s*$/, '');
 
   const { log, result } = await burst(() => run(source, features));
 
