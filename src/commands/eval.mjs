@@ -35,7 +35,6 @@ function run(source, features) {
         'warn',
         'debug',
         'error',
-        'clear',
       ].forEach((method) => {
         const fn = new Value((args) => {
           log.push(args.map((a, i) => {
@@ -48,6 +47,11 @@ function run(source, features) {
         });
         CreateDataProperty(console, new Value(method), fn);
       });
+
+      CreateDataProperty(console, new Value('clear'), new Value(() => {
+        log.length = 0;
+        return Value.undefined;
+      }));
     }
 
     CreateDataProperty(
