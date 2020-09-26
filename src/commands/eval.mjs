@@ -89,7 +89,7 @@ async function evil(message) {
 
   await message.reply(`${message.author.toMention()}
 \`\`\`js
-${log.length > 0 ? `${log.join('\n')}\n` : ''}${result}
+${log.length > 0 ? `${log.join('\n')}` : result}
 \`\`\`
 `);
 }

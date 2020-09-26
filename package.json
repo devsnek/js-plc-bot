@@ -23,6 +23,6 @@
     "ws": "^7.2.3"
   },
   "dependencies": {
-    "@engine262/engine262": "0.0.1-d8db4bb01ec70e688847d5af3b24b213b24efd04"
+    "@engine262/engine262": "0.0.1-f297980638aafc5721149d4237e300a7a848a879"
   }
 }
