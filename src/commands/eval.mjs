@@ -65,7 +65,7 @@ function run(source, features) {
       }),
     );
 
-    const result = realm.evaluateScript(source);
+    const result = realm.evaluateScript(source, { specifier: 'eval' });
     return inspect(result);
   });
 
@@ -78,7 +78,7 @@ async function evil(message) {
       rawFeatures,
       defeatured,
     },
-  } = /(--features=(?<rawFeatures>\S+) )?(?<defeatured>.*)/s.exec(message.content);
+  } = /(--features=(?<rawFeatures>\S+) )?(?<defeatured>.*)/su.exec(message.content);
   const features = rawFeatures ? rawFeatures.split(',') : [];
 
   const source = defeatured

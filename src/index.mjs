@@ -37,7 +37,7 @@ discord.registerEventHandler('MESSAGE_CREATE', async (message) => {
     }
   } else if (COMMAND_PREFIX.test(message.content)) {
     const replaced = message.content.replace(COMMAND_PREFIX, '').trim();
-    const commandName = replaced.split(/\b/)[0];
+    const commandName = replaced.split(/\s/u)[0];
     if (commandName in commands) {
       const isStaff = message.member.roles.includes(STAFF_ROLE_ID);
       const command = commands[commandName];
