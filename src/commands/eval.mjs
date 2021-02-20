@@ -8,7 +8,8 @@ import {
   OrdinaryObjectCreate,
   inspect,
 } from '@engine262/engine262';
-import { burst } from '../burst.mjs';
+import { burst } from '../burst';
+import { checkStaff } from '../moderation';
 
 function run(source, features) {
   const log = [];
@@ -72,35 +73,35 @@ function run(source, features) {
   return { log, result: s };
 }
 
-async function evil(message) {
-  const {
-    groups: {
-      rawFeatures,
-      defeatured,
-    },
-  } = /(--features=(?<rawFeatures>\S+) )?(?<defeatured>.*)/su.exec(message.content);
-  const features = rawFeatures ? rawFeatures.split(',') : [];
+discord.interactions.commands.register({
+  name: 'eval',
+  description: 'Run some JS in a sandbox',
+  options: (opts) => ({
+    source: opts.string('js source'),
+  }),
+}, async (interaction, { source }) => {
+  const { log, result } = await burst(() => run(source, []));
 
-  const source = defeatured
-    .replace(/^\s*```(js|javascript)?/, '')
-    .replace(/```\s*$/, '');
-
-  const { log, result } = await burst(() => run(source, features));
-
-  await message.reply(`${message.author.toMention()}
+  await interaction.respond(`\
 \`\`\`js
 ${log.length > 0 ? `${log.join('\n')}` : result}
 \`\`\`
 `);
-}
-export { evil as eval };
+});
 
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
-export async function debug(message) {
-  const source = message.content
-    .replace(/^```(js|javascript)?/, '')
-    .replace(/```$/, '');
-  const r = await AsyncFunction('pylon', 'discord', 'message', source)(pylon, discord, message);
-  await message.reply(r === undefined ? 'undefined' : JSON.stringify(r));
-}
-debug.staffOnly = true;
+discord.interactions.commands.register({
+  name: 'debug',
+  description: 'debug',
+  options: (opts) => ({
+    source: opts.string('source'),
+  }),
+}, async (interaction, { source }) => {
+  try {
+    await checkStaff(interaction);
+    const r = await AsyncFunction('pylon', 'discord', 'interaction', source)(pylon, discord, interaction);
+    await interaction.respond(r === undefined ? 'undefined' : JSON.stringify(r));
+  } catch (e) {
+    await interaction.respond(e.message);
+  }
+});

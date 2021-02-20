@@ -64,8 +64,20 @@ fetch(`https://pylon.bot/api/deployments/${process.env.DEPLOYMENT_ID}`, {
     },
   }),
 }).then((r) => r.json())
-  .then(({ workbench_url: workbenchEndpoint }) => {
-    console.log('Published!');
+  .then((v) => {
+    if (!v.workbench_url) {
+      return Promise.reject(v);
+    }
+    return v;
+  })
+  .then(({ workbench_url: workbenchEndpoint, errors }) => {
+    if (errors) {
+      errors.forEach((error) => {
+        console.error(new Error(error));
+      });
+    } else {
+      console.log('Published!');
+    }
     workbenchWs(workbenchEndpoint);
   })
   .catch(console.error);

@@ -2,26 +2,44 @@ import env from '../env';
 
 const { SELF_ASSIGN_PREFIX } = env;
 
-export async function role(message) {
-  const guild = await message.getGuild();
-  const roles = (await guild.getRoles())
+const group = discord.interactions.commands.registerGroup({
+  name: 'roles',
+  description: 'group commands',
+});
+
+async function getRoles(interaction) {
+  const guild = await interaction.getGuild();
+  return (await guild.getRoles())
     .filter((r) => r.name.startsWith(SELF_ASSIGN_PREFIX))
     .map((r) => ({ id: r.id, name: r.name.slice(SELF_ASSIGN_PREFIX.length) }));
-
-  if (message.content === '') {
-    await message.reply(`Available roles for self-assignment: ${roles.map((r) => `"${r.name}"`).join(', ')}`);
-  } else {
-    const role = roles.find((r) => r.name === message.content);
-    if (role) {
-      if (message.member.roles.includes(role.id)) {
-        await message.member.removeRole(role.id);
-        await message.reply(`The "${role.name}" role has been removed!`);
-      } else {
-        await message.member.addRole(role.id);
-        await message.reply(`You now have the "${role.name}" role!`);
-      }
-    } else {
-      await message.reply('Unknown role. Send `@Pylon role` to see available roles.');
-    }
-  }
 }
+
+group.register({
+  name: 'list',
+  description: 'list available roles for self assignment',
+}, async (interaction) => {
+  const roles = await getRoles();
+  await interaction.respond(roles.map((r) => `"${r.name}"`).join(', '));
+});
+
+group.register({
+  name: 'toggle',
+  description: 'toggle a self-assignable role',
+  options: (opts) => ({
+    name: opts.string('name of role'),
+  }),
+}, async (interaction, name) => {
+  const roles = await getRoles();
+  const role = roles.find((r) => r.name === name);
+  if (role) {
+    if (interaction.member.roles.includes(role.id)) {
+      await interaction.member.removeRole(role.id);
+      await interaction.reply(`The "${role.name}" role has been removed!`);
+    } else {
+      await interaction.member.addRole(role.id);
+      await interaction.respond(`You now have the "${role.name}" role!`);
+    }
+  } else {
+    await interaction.respond('Unknown role. Send `@Pylon role` to see available roles.');
+  }
+});

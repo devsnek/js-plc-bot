@@ -1,15 +1,11 @@
-import * as commands from './commands';
+import './commands';
 import * as tags from './tags';
 import { checkDisplayName } from './moderation';
 import env from './env';
 
 const {
-  STAFF_ROLE_ID,
-  PYLON_BOT_ID,
   TAG_PREFIX,
 } = env;
-
-const COMMAND_PREFIX = new RegExp(String.raw`^<@!?${PYLON_BOT_ID}>`);
 
 discord.registerEventHandler('MESSAGE_CREATE', async (message) => {
   if (message.author.bot || !(message instanceof discord.GuildMemberMessage)) {
@@ -33,23 +29,6 @@ discord.registerEventHandler('MESSAGE_CREATE', async (message) => {
         await message.reply(`${match[0]}, ${entry}`);
       } else {
         await message.reply(entry);
-      }
-    }
-  } else if (COMMAND_PREFIX.test(message.content)) {
-    const replaced = message.content.replace(COMMAND_PREFIX, '').trim();
-    const commandName = replaced.split(/\s/u)[0];
-    if (commandName in commands) {
-      const isStaff = message.member.roles.includes(STAFF_ROLE_ID);
-      const command = commands[commandName];
-      if (!isStaff && command.staffOnly) {
-        await message.reply(`${message.author.toMention()}, You don't have permission to use this command`);
-        return;
-      }
-      message.content = replaced.slice(commandName.length + 1);
-      try {
-        await command(message);
-      } catch (e) {
-        await message.reply(`${message.author.toMention()}, ${e.message}`);
       }
     }
   } else if (message.content.includes('www.w3schools.com')) {

@@ -1,38 +1,57 @@
 import * as tags from '../tags';
+import { checkStaff } from '../moderation';
 
-export async function learn(message) {
-  const [rawName, rawValue] = message.content.split('=');
-  const name = rawName.trim().toLowerCase();
-  const value = rawValue.trim();
+const group = discord.interactions.commands.registerGroup({
+  name: 'tags',
+  description: 'tag management',
+});
+
+group.register({
+  name: 'learn',
+  description: 'Learn something new',
+  options: (opt) => ({
+    name: opt.string('name of thing to learn'),
+    value: opt.string('thing to learn'),
+  }),
+}, async (interaction, { name, value }) => {
   try {
+    await checkStaff(interaction);
     await tags.put(name, value);
-    await message.reply(`Learned "${name}":\n${value}`);
+    await interaction.respond(`Learned "${name}":\n${value}`);
   } catch (e) {
-    await message.reply(e.message);
+    await interaction.respond(e.message);
   }
-}
-learn.staffOnly = true;
+});
 
-export async function unlearn(message) {
-  const name = message.content.trim();
+group.register({
+  name: 'forget',
+  description: 'Forget something',
+  options: (opt) => ({
+    name: opt.string('name of thing to forget'),
+  }),
+}, async (interaction, { name }) => {
   try {
+    await checkStaff(interaction);
     await tags.delete(name);
-    await message.reply(`"${name}" has been unlearned`);
+    await interaction.respond(`"${name}" has been unlearned`);
   } catch (e) {
-    await message.reply(e.message);
+    await interaction.respond(e.message);
   }
-}
-unlearn.staffOnly = true;
+});
 
-export async function alias(message) {
-  const [rawAlias, rawName] = message.content.split('=');
-  const alias = rawAlias.trim().toLowerCase();
-  const name = rawName.trim().toLowerCase();
+group.register({
+  name: 'alias',
+  description: 'Alias a name to something previously learned',
+  options: (opt) => ({
+    to: opt.string('name of learned thing'),
+    from: opt.string('name of alias'),
+  }),
+}, async (interaction, { from, to }) => {
   try {
-    await tags.alias(alias, name);
-    await message.reply(`Created an alias from "${alias}" to "${name}"`);
+    await checkStaff(interaction);
+    await tags.alias(from, to);
+    await interaction.respond(`Created an alias from "${from}" to "${to}"`);
   } catch (e) {
-    await message.reply(e.message);
+    await interaction.respond(e.message);
   }
-}
-alias.staffOnly = true;
+});
