@@ -1,4 +1,5 @@
 import env from '../env';
+import { slashCommand } from '../slash';
 
 const { SELF_ASSIGN_PREFIX } = env;
 
@@ -17,10 +18,10 @@ async function getRoles(interaction) {
 group.register({
   name: 'list',
   description: 'list available roles for self assignment',
-}, async (interaction) => {
-  const roles = await getRoles();
+}, slashCommand(async (interaction) => {
+  const roles = await getRoles(interaction);
   await interaction.respond(roles.map((r) => `"${r.name}"`).join(', '));
-});
+}));
 
 group.register({
   name: 'toggle',
@@ -28,8 +29,8 @@ group.register({
   options: (opts) => ({
     name: opts.string('name of role'),
   }),
-}, async (interaction, name) => {
-  const roles = await getRoles();
+}, slashCommand(async (interaction, name) => {
+  const roles = await getRoles(interaction);
   const role = roles.find((r) => r.name === name);
   if (role) {
     if (interaction.member.roles.includes(role.id)) {
@@ -40,6 +41,6 @@ group.register({
       await interaction.respond(`You now have the "${role.name}" role!`);
     }
   } else {
-    await interaction.respond('Unknown role. Send `@Pylon role` to see available roles.');
+    await interaction.respond('Unknown role. Use `/roles list` to see available roles.');
   }
-});
+}));

@@ -10,6 +10,7 @@ import {
 } from '@engine262/engine262';
 import { burst } from '../burst';
 import { checkStaff } from '../moderation';
+import { slashCommand } from '../slash';
 
 function run(source, features) {
   const log = [];
@@ -79,7 +80,7 @@ discord.interactions.commands.register({
   options: (opts) => ({
     source: opts.string('js source'),
   }),
-}, async (interaction, { source }) => {
+}, slashCommand(async (interaction, { source }) => {
   const { log, result } = await burst(() => run(source, []));
 
   await interaction.respond(`\
@@ -87,7 +88,7 @@ discord.interactions.commands.register({
 ${log.length > 0 ? `${log.join('\n')}` : result}
 \`\`\`
 `);
-});
+}));
 
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
 discord.interactions.commands.register({
@@ -96,12 +97,8 @@ discord.interactions.commands.register({
   options: (opts) => ({
     source: opts.string('source'),
   }),
-}, async (interaction, { source }) => {
-  try {
-    await checkStaff(interaction);
-    const r = await AsyncFunction('pylon', 'discord', 'interaction', source)(pylon, discord, interaction);
-    await interaction.respond(r === undefined ? 'undefined' : JSON.stringify(r));
-  } catch (e) {
-    await interaction.respond(e.message);
-  }
-});
+}, slashCommand(async (interaction, { source }) => {
+  await checkStaff(interaction);
+  const r = await AsyncFunction('pylon', 'discord', 'interaction', source)(pylon, discord, interaction);
+  await interaction.respond(r === undefined ? 'undefined' : JSON.stringify(r));
+}));
