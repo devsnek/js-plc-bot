@@ -29,13 +29,13 @@ group.register({
   options: (opts) => ({
     name: opts.string('name of role'),
   }),
-}, slashCommand(async (interaction, name) => {
+}, slashCommand(async (interaction, { name }) => {
   const roles = await getRoles(interaction);
   const role = roles.find((r) => r.name === name);
   if (role) {
     if (interaction.member.roles.includes(role.id)) {
       await interaction.member.removeRole(role.id);
-      await interaction.reply(`The "${role.name}" role has been removed!`);
+      await interaction.respond(`The "${role.name}" role has been removed!`);
     } else {
       await interaction.member.addRole(role.id);
       await interaction.respond(`You now have the "${role.name}" role!`);
